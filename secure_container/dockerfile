@@ -1,0 +1,21 @@
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Create a writable directory for Matplotlib config
+# RUN mkdir -p /app/.config/matplotlib
+
+# Set the MPLCONFIGDIR environment variable
+# ENV MPLCONFIGDIR=/app/.config/matplotlib
+
+# Install any needed packages specified in requirements.txt
+RUN pip install  -r requirements.txt
+
+# Command to run your script
+
+CMD ["python", "main.py"]

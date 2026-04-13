@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Phishing Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            color: #007BFF;
+        }
+
+        #urlForm {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result_url, #result_status {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>URL Phishing Detection</h1>
+    <form action="/view_history" method="get" style = "align-items: right; text-align: right;">
+      <button type="submit">View History</button>
+    </form>
+    
+    <form id="urlForm">
+        <label for="url">Enter URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="result_url">
+    </div>
+    <div id="result_status" style = "font-size: xx-large; font-weight: 700; font-variant: small-caps;">
+        <!-- Prediction result will be displayed here -->
+    </div>
+
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const url = document.getElementById('url').value;
+
+            fetch('/url_detect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('URL submitted:', data.message);
+                document.getElementById('result_url').textContent = 'Processing, please wait...';
+
+                // Periodically check for the result
+                const checkResult = setInterval(() => {
+                    fetch(`/result?url=${encodeURIComponent(url)}`)
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.message) {
+                                console.log('Still processing...');
+                            } else {
+                                document.getElementById('result_url').textContent = `Prediction for ${result.url}:`;
+                                document.getElementById('result_status').textContent = `${result.prediction}`;
+                                if (result.prediction == 'legit')
+                                    document.getElementById('result_status').style.backgroundColor = "green";
+                                else
+                                    document.getElementById('result_status').style.backgroundColor = "red";
+                                clearInterval(checkResult);  // Stop checking once the result is available
+                            }
+                        });
+                }, 2000);  // Check every 2 seconds
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

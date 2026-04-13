@@ -1,0 +1,12 @@
+tldextract
+urllib3
+tld
+requests
+python-whois
+dnspython
+numba
+tqdm
+pandas 
+matplotlib
+redis
+bs4
